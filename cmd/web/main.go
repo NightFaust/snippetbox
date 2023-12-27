@@ -2,15 +2,11 @@ package main
 
 import (
 	"flag"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"path/filepath"
 )
-
-type config struct {
-	addr      string
-	staticDir string
-}
 
 func main() {
 	var cfg config
@@ -18,20 +14,36 @@ func main() {
 	flag.StringVar(&cfg.staticDir, "static-dir", ".ui/static", "Path to static assets")
 	flag.Parse()
 
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	app := &application{
+		logger: logger,
+	}
+
 	mux := http.NewServeMux()
 
 	fileServer := http.FileServer(neuteredFileSystem{http.Dir(cfg.staticDir)})
 	mux.Handle("/static", http.NotFoundHandler())
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet/view", snippetView)
-	mux.HandleFunc("/snippet/create", snippetCreate)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/snippet/view", app.snippetView)
+	mux.HandleFunc("/snippet/create", app.snippetCreate)
 
-	log.Printf("starting server on %s", cfg.addr)
+	logger.Info("starting server", slog.String("addr", cfg.addr))
 
 	err := http.ListenAndServe(cfg.addr, mux)
-	log.Fatal(err)
+	logger.Error(err.Error())
+	os.Exit(1)
+}
+
+type config struct {
+	addr      string
+	staticDir string
+}
+
+type application struct {
+	logger *slog.Logger
 }
 
 type neuteredFileSystem struct {
