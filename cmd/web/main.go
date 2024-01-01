@@ -8,6 +8,8 @@ import (
 	"os"
 	"text/template"
 
+	"github.com/go-playground/form/v4"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/nightfaust/snippetbox/internal/models"
 )
@@ -34,10 +36,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	formDecoder := form.NewDecoder()
+
 	app := &application{
 		logger:        logger,
 		snippets:      &models.SnippetModel{DB: db},
 		templateCache: templateCache,
+		formDecoder:   formDecoder,
 	}
 
 	logger.Info("starting server", slog.String("addr", cfg.addr))
@@ -72,4 +77,5 @@ type application struct {
 	logger        *slog.Logger
 	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
 }
