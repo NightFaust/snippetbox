@@ -3,12 +3,13 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"github.com/alexedwards/scs/mysqlstore"
 	"log/slog"
 	"net/http"
 	"os"
 	"text/template"
 	"time"
+
+	"github.com/alexedwards/scs/mysqlstore"
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
@@ -53,9 +54,14 @@ func main() {
 		sessionManager: sessionManager,
 	}
 
+	srv := &http.Server{
+		Addr:    cfg.addr,
+		Handler: app.routes(cfg.staticDir),
+	}
+
 	logger.Info("starting server", slog.String("addr", cfg.addr))
 
-	err = http.ListenAndServe(cfg.addr, app.routes(cfg.staticDir))
+	err = srv.ListenAndServe()
 	logger.Error(err.Error())
 	os.Exit(1)
 }
