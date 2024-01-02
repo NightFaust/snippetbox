@@ -1,3 +1,5 @@
 .idea/
 *.exe
 .DS_Store
+tls/
+*.pem
