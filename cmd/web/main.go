@@ -55,8 +55,9 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:    cfg.addr,
-		Handler: app.routes(cfg.staticDir),
+		Addr:     cfg.addr,
+		Handler:  app.routes(cfg.staticDir),
+		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
 	}
 
 	logger.Info("starting server", slog.String("addr", cfg.addr))
