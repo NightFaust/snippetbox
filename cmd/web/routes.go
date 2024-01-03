@@ -13,12 +13,10 @@ func (app *application) routes(staticDir string) http.Handler {
 		app.notFound(w)
 	})
 
-	//fileServer := http.FileServer(neuteredFileSystem{http.Dir(staticDir)})
 	fileServer := http.FileServer(http.Dir(staticDir))
-
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	dynamic := alice.New(app.sessionManager.LoadAndSave)
+	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
 
 	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))
 	router.Handler(http.MethodGet, "/snippet/view/:id", dynamic.ThenFunc(app.snippetView))
