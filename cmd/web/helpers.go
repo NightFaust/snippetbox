@@ -21,17 +21,17 @@ func (app *application) serverError(w http.ResponseWriter, r *http.Request, err 
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
-// Send a specific status code and description to user.
+// ClientError send a specific status code and description to user.
 func (app *application) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }
 
-// Send a 404 Not Found response to user.
+// NotFound send a 404 Not Found response to user.
 func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-// Render a template to user.
+// Render render a template to user.
 func (app *application) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData) {
 	ts, ok := app.templateCache[page]
 	if !ok {
@@ -71,4 +71,9 @@ func (app *application) decodePostForm(r *http.Request, target any) error {
 	}
 
 	return nil
+}
+
+// isAuthenticated return true if the current request is from an authenticated user
+func (app *application) isAuthenticated(r *http.Request) bool {
+	return app.sessionManager.Exists(r.Context(), "authenticatedUserID")
 }
