@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+type SnippetModelInterface interface {
+	Insert(title string, content string, expires int) (int, error)
+	Get(id int) (Snippet, error)
+	Latest() ([]Snippet, error)
+}
+
 // Insert a new snippet into the database.
 func (m *SnippetModel) Insert(title string, content string, expires int) (int, error) {
 	query := `INSERT INTO snippets (title, content, created, expires)
@@ -77,7 +83,6 @@ type Snippet struct {
 	Title   string
 	Content string
 }
-
 type SnippetModel struct {
 	DB *sql.DB
 }
