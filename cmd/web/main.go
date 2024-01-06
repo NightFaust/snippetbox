@@ -20,12 +20,16 @@ import (
 )
 
 func main() {
-	var cfg config
-	var isDebug bool
-	flag.StringVar(&cfg.addr, "addr", ":4000", "HTTP network address")
-	flag.StringVar(&cfg.dsn, "dsn", "web:pass@/snippetbox?parseTime=true", "MySQL data source name")
-	flag.BoolVar(&isDebug, "debug", false, "enable isDebug mode")
+	addr := flag.String("addr", ":4000", "HTTP network address")
+	dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "MySQL data source name")
+	isDebug := flag.Bool("debug", false, "enable isDebug mode")
 	flag.Parse()
+
+	cfg := config{
+		addr:      *addr,
+		staticDir: "./ui/static",
+		dsn:       *dsn,
+	}
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
@@ -56,7 +60,7 @@ func main() {
 		templateCache:  templateCache,
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
-		debug:          isDebug,
+		debug:          *isDebug,
 	}
 
 	tlsConfig := &tls.Config{

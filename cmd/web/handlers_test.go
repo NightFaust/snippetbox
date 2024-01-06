@@ -73,6 +73,59 @@ func TestSnippetView(t *testing.T) {
 	}
 }
 
+func TestSnippetCreate(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	tests := []struct {
+		name       string
+		urlPath    string
+		wantCode   int
+		wantHeader string
+		wantBody   string
+	}{
+		{
+			name:       "Unauthenticated user",
+			urlPath:    "/snippet/create",
+			wantCode:   http.StatusSeeOther,
+			wantHeader: "/user/login",
+		},
+		{
+			name:       "Authenticated user",
+			urlPath:    "/snippet/create",
+			wantCode:   http.StatusOK,
+			wantHeader: "",
+			wantBody:   "<form action='/snippet/create' method='POST'>",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "Authenticated user" {
+				_, _, body := ts.get(t, "/user/login")
+				validCSRFToken := extractCSRFToken(t, body)
+				if validCSRFToken == "" {
+					t.Fatal("validCSRFToken is empty")
+				}
+				form := url.Values{}
+				form.Add("email", "alice@example.com")
+				form.Add("password", "pa$$word")
+				form.Add("csrf_token", validCSRFToken)
+
+				_, _, body = ts.postForm(t, "/user/login", form)
+			}
+			code, header, body := ts.get(t, tt.urlPath)
+			assert.Equal(t, code, tt.wantCode)
+			assert.StringContains(t, header.Get("Location"), tt.wantHeader)
+
+			if wantBody := tt.wantBody; wantBody != "" {
+				assert.StringContains(t, body, wantBody)
+			}
+		})
+	}
+}
+
 func TestUserSignup(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
