@@ -51,6 +51,11 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, http.StatusOK, "home.tmpl", data)
 }
 
+func (app *application) about(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	app.render(w, r, http.StatusOK, "about.tmpl", data)
+}
+
 // Display a specific snippet
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
@@ -214,6 +219,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
 
 }
+
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 	err := app.sessionManager.RenewToken(r.Context())
 	if err != nil {
