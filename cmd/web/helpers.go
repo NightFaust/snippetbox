@@ -7,6 +7,7 @@ import (
 	"github.com/justinas/nosurf"
 	"log/slog"
 	"net/http"
+	"runtime/debug"
 	"time"
 
 	"github.com/go-playground/form/v4"
@@ -20,7 +21,11 @@ func (app *application) serverError(w http.ResponseWriter, r *http.Request, err 
 	)
 
 	app.logger.Error(err.Error(), slog.String("method", method), slog.String("uri", uri))
-	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if app.debug {
+		http.Error(w, fmt.Sprintf("%s\n%s", err, debug.Stack()), http.StatusInternalServerError)
+	} else {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	}
 }
 
 // ClientError send a specific status code and description to user.
