@@ -18,11 +18,13 @@ func (app *application) serverError(w http.ResponseWriter, r *http.Request, err 
 	var (
 		method = r.Method
 		uri    = r.URL.RequestURI()
+		trace  = string(debug.Stack())
 	)
 
 	app.logger.Error(err.Error(), slog.String("method", method), slog.String("uri", uri))
+
 	if app.debug {
-		http.Error(w, fmt.Sprintf("%s\n%s", err, debug.Stack()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("%s\n%s", err, trace), http.StatusInternalServerError)
 	} else {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
